@@ -26,3 +26,8 @@ Scripts$ ./automate.sh <absolute_file_path_to_instant_ngp_image_folder>
 The ```automate.sh``` script will copy over the image files and transforms.json file to the instant ngp directory. Finally, build the Instant-NGP NeRF using the instructions given [Instant-NGP Instructions](https://github.com/NVlabs/instant-ngp)
 
 Additionally, before every iteration of this pipeline, make sure that your ```screenshots``` directory is empty! This is because Unity will write over all the images, so we want to keep the new ones. (Currently working on optimizing the pipeline to make it more streamlined!)
+
+### Current TODOs
+
+1. We want to streamline the sampling pipeline by figuring out a way to run the Unity script from the command line.
+2. Optimize the sampling code. Currently, the Unity camera manually rotates around the object, which makes the whole process take a lot longer. We want the camera to teleport to the desired locations to make the sampling instantaneous.
