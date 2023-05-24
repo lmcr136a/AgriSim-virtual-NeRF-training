@@ -145,8 +145,8 @@ def create_transforms_json():
         "p2": get_camera_properties()[7],
         "cx": get_camera_properties()[8],
         "cy": get_camera_properties()[9],
-        "w": get_image_shape("../screenshots/pic0.png")[1],
-        "h": get_image_shape("../screenshots/pic0.png")[0],
+        "w": get_image_shape("../screenshots/pic1.png")[1],
+        "h": get_image_shape("../screenshots/pic1.png")[0],
         "aabb_scale": 2,
         "frames": create_frames_arr()
     }

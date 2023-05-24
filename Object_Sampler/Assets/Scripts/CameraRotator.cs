@@ -10,13 +10,11 @@ public class CameraRotator : MonoBehaviour
 {
     public GameObject target_object;
     private Camera cam;
+    private Transform center_point;
+    public float radius = 5f;
 
-    private int num_screenshots;
     public int max_screenshots;
-
-    public float camera_speed;
-
-    private int frames;
+    private int num_screenshots;
 
     private List<Vector3> positions_list;
     private string positions_file_path;
@@ -27,6 +25,9 @@ public class CameraRotator : MonoBehaviour
     private Quaternion curr_quaternion;
 
     private List<float> camera_properties;
+
+    private float start_time;
+    private float elapsed_time;
 
     // write the transforms list to a file
     public void write_positions(string file_path, List<Vector3> matrices)
@@ -68,12 +69,13 @@ public class CameraRotator : MonoBehaviour
         return camIntriMatrix;
     }
 
-
     void Start()
     {
-        cam = GetComponent<Camera>();
+        start_time = Time.time;
+
         num_screenshots = 0;
-        Application.targetFrameRate = 60;
+        cam = GetComponent<Camera>();
+        Application.targetFrameRate = 300;
 
         positions_list = new List<Vector3>();
         quaternions_list = new List<Quaternion>();
@@ -110,36 +112,37 @@ public class CameraRotator : MonoBehaviour
             camera_properties_writer.WriteLine(camera_properties[i].ToString());
         }
         camera_properties_writer.Close();
+
     }
-
-    // Update is called once per frame
-    void Update()
-    {
-        Vector3 center_point = target_object.transform.position;
-        transform.LookAt(center_point); // have the camera always pointing to the object
-
-        // get the current position and quaternion of the camera
+    
+    void Update() {
+        elapsed_time = Time.time - start_time;
+        center_point = target_object.transform;
+        float angle_increment = 360f / max_screenshots;
+        cam.transform.LookAt(center_point); // have the camera always pointing to the object
         curr_position = Camera.main.transform.position;
         curr_quaternion = Camera.main.transform.rotation;
+        // take a screenshot and save the position/quaternion information
+        ScreenCapture.CaptureScreenshot("Assets/screenshots/pic" + num_screenshots.ToString() + ".png");
+        Debug.Log("captured screenshot " + num_screenshots.ToString());
+        positions_list.Add(curr_position);
+        quaternions_list.Add(curr_quaternion);
 
-        // take a screenshot every 3 seconds, with the camera rotating along a single axis
-        this.transform.RotateAround(center_point, new Vector3(0f, 1f, 0f), camera_speed * Time.deltaTime);
-        if (frames % 180 == 0) {
-            ScreenCapture.CaptureScreenshot("Assets/screenshots/pic" + num_screenshots.ToString() + ".png");
-            Debug.Log("captured screenshot " + num_screenshots.ToString());
-            num_screenshots++;
-            // for every screenshot, add the positions and quaternion information
-            positions_list.Add(curr_position);
-            quaternions_list.Add(curr_quaternion);
-        }
-        // If we've reached the desired number of screenshots, write all the positions and quaternions to a file and exit the program
+        // update the camera position
+        float angle = num_screenshots * (2 * Mathf.PI / max_screenshots); 
+        Vector3 position = center_point.position + new Vector3(Mathf.Cos(angle) * radius, 3.5f, Mathf.Sin(angle) * radius);
+        cam.transform.position = position;
+        cam.transform.LookAt(center_point);
+
+        num_screenshots++;
         if (num_screenshots >= max_screenshots) {
             Debug.Log("Reached max screenshots, exiting");
-            // write the positions and quaternions to a file
             write_positions(positions_file_path, positions_list);
             write_quaternions(quaternions_file_path, quaternions_list);
             UnityEditor.EditorApplication.isPlaying = false;
+            Debug.Log("Elapsed Time: " + elapsed_time.ToString("F2") + " seconds");
         }
-        frames++;
+
     }
+
 }

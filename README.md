@@ -13,6 +13,8 @@ After cloning this repo, please install the Unity game engine and ensure that it
 ```
 python
 scipy
+opencv
+numpy
 ```
 
 After opening up the Unity environment, simply set the ```max_screenshots``` parameter in the CameraRotator script by navigating to the Main Camera's inspector GUI. Click play, and the image sampling phase will begin.
