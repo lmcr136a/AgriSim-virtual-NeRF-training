@@ -21,11 +21,14 @@ After opening up the Unity environment, simply set the ```max_screenshots``` par
 
 Once the textfiles and screenshots have all been saved, navigate to the Scripts directory and run the following commands.
 ```sh
-Scripts$ python get_transforms.py
 Scripts$ ./automate.sh <absolute_file_path_to_instant_ngp_image_folder>
 ```
 
-The ```automate.sh``` script will copy over the image files and transforms.json file to the instant ngp directory. Finally, build the Instant-NGP NeRF using the instructions given [Instant-NGP Instructions](https://github.com/NVlabs/instant-ngp)
+The ```automate.sh``` script will perform two operations:
+1. Generate the transforms.json file by running the python script ```get_transforms.py```.
+2. Copy over the image files and transforms.json fiel to the instant-ngp directory.
+
+Finally, build the Instant-NGP NeRF using the instructions given [Instant-NGP Instructions](https://github.com/NVlabs/instant-ngp)
 
 Additionally, before every iteration of this pipeline, make sure that your ```screenshots``` directory is empty! This is because Unity will write over all the images, so we want to keep the new ones. (Currently working on optimizing the pipeline to make it more streamlined!)
 
