@@ -229,7 +229,6 @@ GameObject:
   - component: {fileID: 963194227}
   - component: {fileID: 963194226}
   - component: {fileID: 963194229}
-  - component: {fileID: 963194230}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -317,22 +316,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   target_object: {fileID: 1268991529}
   radius: 5
-  max_screenshots: 10
---- !u!114 &963194230
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 963194225}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e95033382d4fe526c97a52fb70af6be3, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  target_object: {fileID: 1268991529}
-  radius: 5
-  num_points: 50
+  max_screenshots: 50
 --- !u!1 &1268991529 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: ed200dec971ea11ada91fe1cb1feabc1, type: 3}

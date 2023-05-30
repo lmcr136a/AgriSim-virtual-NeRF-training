@@ -39,8 +39,6 @@
      <Compile Include="Assets/Scripts/CameraRotator.cs" />
      <Compile Include="Assets/PBR_Grass_Textures/Scripts/CameraFreeflight.cs" />
      <None Include="Assets/screenshots/camera_properties.txt" />
-     <None Include="Assets/screenshots/positions.txt" />
-     <None Include="Assets/screenshots/quaternions.txt" />
     <Reference Include="UnityEngine">
         <HintPath>/home/brian/Unity/Hub/Editor/2021.3.12f1/Editor/Data/Managed/UnityEngine/UnityEngine.dll</HintPath>
     </Reference>
