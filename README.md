@@ -27,14 +27,14 @@ Once the textfiles and screenshots have all been saved, navigate to the Scripts 
 ```sh
 Scripts$ ./automate.sh <absolute_file_path_to_instant_ngp_image_folder>
 ```
+For example:
+```sh
+./automate.sh /home/brian/Desktop/instant-ngp/data/nerf/sim_flower/
+```
 
 The ```automate.sh``` script will perform two operations:
 1. Generate the transforms.json file by running the python script ```get_transforms.py```.
-2. Copy over the image files and transforms.json fiel to the instant-ngp directory.
+2. Copy over the image files and transforms.json field to the instant-ngp directory.
 3. Call the Instant-NGP's Python API to train and build a NeRF based on the given training images.
 
 Once you have the resulting mesh, you can view the resulting OBJ file using any rendering software like Meshlab.
-
-### Current TODOs
-
-1. Automate the Unity image sampling pipeline.
