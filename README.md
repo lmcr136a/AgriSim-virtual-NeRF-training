@@ -28,7 +28,7 @@ ___**Make sure to enable physical camera in the Unity GUI.**___ This is to ensur
 ![readme_unity_help](https://github.com/QuantuMope/AgriSim/assets/63471459/600b1250-f88c-490c-baef-9b1427a77083)
 
 
-Once the textfiles and screenshots have all been saved, make sure you have created a separate directory for the NeRF object
+Once the text files and screenshots have all been saved, make sure you have created a separate directory for the NeRF object
 ```
 <path-to-instant-ngp>/data/nerf/<OBJECT_NAME> # Make sure this directory exists
 ```
