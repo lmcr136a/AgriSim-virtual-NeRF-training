@@ -156,7 +156,6 @@ def create_transforms_json():
         f.write(json_object)
     with open("transforms.json", "r") as f:
         json_data = f.read()
-        print(json_data)
 
 if __name__ == "__main__":
     create_transforms_json()
