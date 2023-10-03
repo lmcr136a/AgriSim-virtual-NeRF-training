@@ -4,6 +4,8 @@
 
 This repository provides a method to generate a NeRF of a 3D object using the Unity Game Engine and Instant-NGP. The pipeline begins with a simple Unity environment, where we have a 3D mesh object simulated with the Unity framework. It lies on a solid, flat surface, and has a camera that captures images of the objects at various view angles. 
 
+![environment_view](https://github.com/QuantuMope/AgriSim/assets/63471459/71346f53-15ce-4e3d-a09b-7ce224e5db41)
+
 Once we have these images, our Unity script will write all of the information needed to generate a NeRF using Instant NGP to a text file. This includes the camera's physical properties, the actual images of the objects, as well as the positions and quaternions associated with each image. Once we have written to the text files, our Python script compiles a transforms.json file that formats all of the information that we collected. This essentially allows us to bypass the use of COLMAP when creating a NeRF.
 
 Finally, we will call the Instant NGP's Python API ```pyngp``` to generate a mesh object of the resulting NeRF.
