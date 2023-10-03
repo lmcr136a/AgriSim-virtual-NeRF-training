@@ -58,14 +58,14 @@ Therefore, the transform matrix obtained with Unity's camera will not be compati
 2. When compiling the ```transforms.json``` file within ```get_transforms.py```, we will swap the y-axis and z-axis columns of each quaternion and flip the switch of each of four columns, i.e. ```[x y z w ]``` becomes ```[-x -z -y -w]```.
 3. Initialize a 3x3 Rotation Matrix represented from the original quaternion data using ```scipy.spatial.transform.Rotation.from_quat```.
 4. Now for each frame, we combine the quaternion and position data to construct the 4x4 matrix. The resulting 4x4 matrix should look like 
-$$
+$`
 \left(\begin{array}{cc} 
 Q[0,0] & Q[0,1] & Q[0,2] & P[0]\\
 Q[1,0] & Q[1,1] & Q[1,2] & P[1]\\
 Q[2,0] & Q[2,1] & Q[2,2] & P[2]\\
 0 & 0 & 0 & 1
 \end{array}\right)
-$$
+`$
 Where $Q$ represents the quaternion data and $P$ represents position data.
 
 
