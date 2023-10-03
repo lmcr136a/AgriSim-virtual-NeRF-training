@@ -69,35 +69,6 @@ public class CameraRotator : MonoBehaviour
         return camIntriMatrix;
     }
 
-    //  private IEnumerator TakeScreenshot ()
-    //  {
-    //     center_point = target_object.transform;
-    //     for (int i = 0; i < max_screenshots; i++) {
-    //         yield return new WaitForEndOfFrame();
-    //         float angle = i * (2 * Mathf.PI / max_screenshots); 
-    //         Vector3 position = center_point.position + new Vector3(Mathf.Cos(angle) * radius, 3.5f, Mathf.Sin(angle) * radius);
-    //         cam.transform.position = position;
-    //         cam.transform.LookAt(center_point);
-
-    //         Texture2D screenShot = new Texture2D (Screen.width, Screen.height, TextureFormat.RGB24, false);
-    //         screenShot.ReadPixels(new Rect (0, 0, Screen.width, Screen.height), 0, 0);
-    //         screenShot.Apply ();
-    //         byte[] bytes = screenShot.EncodeToPNG ();
-    //         int index = i;
-    //         i++;
-    //         string fileName = "Assets/screenshots/pic" + num_screenshots.ToString() + ".png";
-    //         System.IO.File.WriteAllBytes (fileName, bytes);
-    //         positions_list.Add(curr_position);
-    //         quaternions_list.Add(curr_quaternion);
-    //     }
-    //     Debug.Log("Reached max screenshots, exiting");
-    //     write_positions(positions_file_path, positions_list);
-    //     write_quaternions(quaternions_file_path, quaternions_list);
-    //     UnityEditor.EditorApplication.isPlaying = false;
-    //     Debug.Log("Elapsed Time: " + elapsed_time.ToString("F2") + " seconds");
-         
-    //  }
-
     void Start()
     {
         start_time = Time.time;
