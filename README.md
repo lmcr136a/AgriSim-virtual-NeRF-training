@@ -23,6 +23,9 @@ After opening up the Unity environment, set the ```max_screenshots``` parameter 
 
 ___**Make sure to enable physical camera in the Unity GUI.**___ This is to ensure that the camera's intrinsic properties written to downstream modules correspond to a physical camera. 
 
+![readme_unity_help](https://github.com/QuantuMope/AgriSim/assets/63471459/600b1250-f88c-490c-baef-9b1427a77083)
+
+
 Once the textfiles and screenshots have all been saved, make sure you have created a separate directory for the NeRF object
 ```
 [path-to-instant-ngp]/data/nerf/OBJECT_NAME # Make sure this directory exists
