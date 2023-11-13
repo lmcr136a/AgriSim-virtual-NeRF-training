@@ -180,15 +180,15 @@ def create_frames_arr():
     # Get all files in the directory
     all_files = os.listdir(SCREENSHOTS_DIR)
 
-    # Filter the files to only include PNG files
-    png_files = [SCREENSHOTS_DIR + file for file in all_files if file.endswith(".png")]
+    # Filter the files to only include images
+    images = [SCREENSHOTS_DIR + file for file in all_files if file.endswith(".png")]
 
     frames_arr = []
 
-    for img in png_files:
+    for img in images:
         # add the file path, sharpness, and transform matrix to the dictionary
         paths = img.split("/")
-        file_path = "./images/" + paths[2]
+        file_path = "./images/" + paths[4]
         frames_dict = {
             "file_path": file_path,
             "sharpness": compute_sharpness(img_path=img),
@@ -216,19 +216,24 @@ def create_transforms_json():
     """
     Compiles the transforms.json file needed to construct a NeRF
     """
+
+    # Get Unity camera properties
+    camera_properties = get_camera_properties()
+    img_shape = get_image_shape(f"{SCREENSHOTS_DIR}pic1.png")
+
     dictionary = {
-        "camera_angle_x": get_camera_properties()[0],
-        "camera_angle_y": get_camera_properties()[1],
-        "fl_x": get_camera_properties()[2],
-        "fl_y": get_camera_properties()[3],
-        "k1": get_camera_properties()[4],
-        "k2": get_camera_properties()[5],
-        "p1": get_camera_properties()[6],
-        "p2": get_camera_properties()[7],
-        "cx": get_camera_properties()[8],
-        "cy": get_camera_properties()[9],
-        "w": get_image_shape(f"{SCREENSHOTS_DIR}pic1.png")[1],
-        "h": get_image_shape(f"{SCREENSHOTS_DIR}pic1.png")[0],
+        "camera_angle_x": camera_properties[0],
+        "camera_angle_y": camera_properties[1],
+        "fl_x": camera_properties[2],
+        "fl_y": camera_properties[3],
+        "k1": camera_properties[4],
+        "k2": camera_properties[5],
+        "p1": camera_properties[6],
+        "p2": camera_properties[7],
+        "cx": camera_properties[8],
+        "cy": camera_properties[9],
+        "w": img_shape[1],
+        "h": img_shape[0],
         "aabb_scale": 2,
         "frames": create_frames_arr()
     }

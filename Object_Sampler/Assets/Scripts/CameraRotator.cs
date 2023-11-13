@@ -6,12 +6,16 @@ using UnityEngine;
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
 
+[RequireComponent(typeof(Camera))]
 public class CameraRotator : MonoBehaviour
 {
     public GameObject target_object;
-    private Camera cam;
+    private Camera Camera;
     private Transform center_point;
     public float radius = 5f;
+
+    private int image_width = 850;
+    private int image_height = 531;
 
     public int max_screenshots;
     private int num_screenshots;
@@ -29,7 +33,10 @@ public class CameraRotator : MonoBehaviour
     private float start_time;
     private float elapsed_time;
 
-    // write the transforms list to a file
+    Vector3 target = new Vector3(0, 0, 0);
+    Vector3 sc = new Vector3();
+
+    // Write the list of camera positions to a file
     public void write_positions(string file_path, List<Vector3> matrices)
     {
         StreamWriter writer = new StreamWriter(file_path, true);
@@ -39,7 +46,7 @@ public class CameraRotator : MonoBehaviour
         writer.Close();
     }
 
-    // write the transforms list to a file
+    // Write the list of camera quarternions to a file
     public void write_quaternions(string file_path, List<Quaternion> matrices)
     {
         StreamWriter writer = new StreamWriter(file_path, true);
@@ -48,7 +55,6 @@ public class CameraRotator : MonoBehaviour
         }
         writer.Close();
     }
-    
 
     // Function to get the intrinsic properties of the camera
     private Matrix4x4 GetIntrinsic(Camera cam)
@@ -69,12 +75,63 @@ public class CameraRotator : MonoBehaviour
         return camIntriMatrix;
     }
 
+    // Convert Cartesian coordinates to Spherical coordinates
+    private Vector3 getSphericalCoordinates(Vector3 cartesian) {
+        float r = Mathf.Sqrt(Mathf.Pow(cartesian.x, 2) + Mathf.Pow(cartesian.y, 2) + Mathf.Pow(cartesian.z, 2));
+        float phi = Mathf.Atan2(cartesian.y, cartesian.x);
+        float theta = Mathf.Acos(cartesian.z / r);
+        return new Vector3(r, phi, theta); 
+    }
+
+    // Convert Spherical coordinates to Cartesian coordinates
+    private Vector3 getCartesianCoordinates(Vector3 spherical) {
+        Vector3 result = new Vector3();
+        result.x = spherical.x * Mathf.Cos(spherical.z) * Mathf.Cos(spherical.y);
+        result.y = spherical.x * Mathf.Sin(spherical.z);
+        result.z = spherical.x * Mathf.Cos(spherical.z) * Mathf.Sin(spherical.y);
+        return result;
+    }
+
+    // After each iteration of Update(), capture image with Unity camera
+    void LateUpdate() {
+        Capture();
+    }
+
+
+    // Captures an image using the Unity camera
+    public void Capture() {
+        string filename = "Assets/screenshots/pic" + (num_screenshots - 1).ToString() + ".png";
+
+        RenderTexture active_rt = RenderTexture.active;
+        RenderTexture.active = Camera.targetTexture; 
+
+        Camera.Render();
+
+        // Current issue: Camera's targetTexture is Null value
+        Texture2D image = new Texture2D(Camera.targetTexture.width, Camera.targetTexture.height);
+        image.ReadPixels(new Rect(0, 0, Camera.targetTexture.width, Camera.targetTexture.height), 0, 0);
+        image.Apply();
+        RenderTexture.active = active_rt;
+
+        byte[] bytes = image.EncodeToPNG();
+        Destroy(image);
+
+        File.WriteAllBytes(filename, bytes);
+
+    }
+
+    // Create a new targetTexture before the script runs
+    void Awake() {
+        Camera = GetComponent<Camera>();
+        Camera.gameObject.SetActive(true);
+        Camera.targetTexture = new RenderTexture(image_width, image_height, 24);
+    }
+
     void Start()
     {
         start_time = Time.time;
 
         num_screenshots = 0;
-        cam = GetComponent<Camera>();
         Application.targetFrameRate = 300;
 
         positions_list = new List<Vector3>();
@@ -84,7 +141,7 @@ public class CameraRotator : MonoBehaviour
 
         // Get all the parameters of the camera, and write it to a file
         camera_properties = new List<float>(); 
-        Matrix4x4 intrinsic = GetIntrinsic(cam);
+        Matrix4x4 intrinsic = GetIntrinsic(Camera);
         float fx = intrinsic[0, 0];
         float fy = intrinsic[1, 1];
         float cx = intrinsic[2, 0];
@@ -113,35 +170,59 @@ public class CameraRotator : MonoBehaviour
         }
         camera_properties_writer.Close();
 
-        // StartCoroutine(TakeScreenshot());
+        target = target_object.transform.position;
+
     }
     
     void Update() {
         elapsed_time = Time.time - start_time;
-        center_point = target_object.transform;
-        float angle_increment = 360f / max_screenshots;
-        cam.transform.LookAt(center_point); // have the camera always pointing to the object
-        curr_position = Camera.main.transform.position;
-        curr_quaternion = Camera.main.transform.rotation;
-        // take a screenshot and save the position/quaternion information
-        ScreenCapture.CaptureScreenshot("Assets/screenshots/pic" + num_screenshots.ToString() + ".png");
-        Debug.Log("captured screenshot " + num_screenshots.ToString());
-        positions_list.Add(curr_position);
-        quaternions_list.Add(curr_quaternion);
+        int images_per_level = 20;
+        string file_path = "Assets/screenshots/pic" + num_screenshots.ToString() + ".png";
+        if (num_screenshots >= 0 && num_screenshots <= 19) {
+            // TODO: determine dx based on max_screenshots
+            if (num_screenshots == 0) {
+                this.transform.position = new Vector3(0.0f, 2.0f, 5.0f);
+                this.transform.LookAt(target);
+                sc = getSphericalCoordinates(this.transform.position);
+            }
+            curr_position = Camera.main.transform.position;
+            curr_quaternion = Camera.main.transform.rotation;
+            positions_list.Add(curr_position);
+            quaternions_list.Add(curr_quaternion);
+            // ScreenCapture.CaptureScreenshot("Assets/screenshots/pic" + num_screenshots.ToString() + ".png");
 
-        // update the camera position
-        float angle = num_screenshots * (2 * Mathf.PI / max_screenshots); 
-        Vector3 position = center_point.position + new Vector3(Mathf.Cos(angle) * radius, 3.5f, Mathf.Sin(angle) * radius);
-        cam.transform.position = position;
-        cam.transform.LookAt(center_point);
-
+            // calculate dx based on max_screenshots
+            float dx = (2 * Mathf.PI) / images_per_level;
+            // Update phi to rotate around the y-axis
+            sc.y += dx;
+            transform.position = getCartesianCoordinates(sc) + target;
+            transform.LookAt(target);
+        } else if (num_screenshots >= 20 && num_screenshots <= 39) {
+            // TODO: determine dx based on max_screenshots
+            if (num_screenshots == 20) {
+                this.transform.position = new Vector3(0.0f, 6.0f, 5.0f);
+                this.transform.LookAt(target);
+                sc = getSphericalCoordinates(this.transform.position);
+            }
+            curr_position = Camera.main.transform.position;
+            curr_quaternion = Camera.main.transform.rotation;
+            positions_list.Add(curr_position);
+            quaternions_list.Add(curr_quaternion);
+            // ScreenCapture.CaptureScreenshot("Assets/screenshots/pic" + num_screenshots.ToString() + ".png");
+            // CamCapture(cam, file_path);
+            // calculate dx based on max_screenshots
+            float dx = (2 * Mathf.PI) / images_per_level;
+            // Update phi to rotate around the y-axis
+            sc.y += dx;
+            transform.position = getCartesianCoordinates(sc) + target;
+            transform.LookAt(target);
+        }
         num_screenshots++;
-        if (num_screenshots >= max_screenshots) {
-            Debug.Log("Reached max screenshots, exiting");
+        if (num_screenshots >= 40) {
             write_positions(positions_file_path, positions_list);
             write_quaternions(quaternions_file_path, quaternions_list);
             UnityEditor.EditorApplication.isPlaying = false;
-            Debug.Log("Elapsed Time: " + elapsed_time.ToString("F2") + " seconds");
+            Debug.Log("Elapsed Time: " + elapsed_time);
         }
 
     }

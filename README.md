@@ -33,14 +33,14 @@ Once the text files and screenshots have all been saved, make sure you have crea
 <path-to-instant-ngp>/data/nerf/<OBJECT_NAME> # Make sure this directory exists
 ```
 
-Then, navigate to the Scripts directory and run the following commands.
+Then, navigate to the AgriSim directory and run the following commands.
 
 ```sh
-AgriSim/Object_Sampler/Assets/Scripts$ ./automate.sh <absolute_file_path_to_instant_ngp_image_folder>
+AgriSim$ ./automate.sh <absolute_file_path_to_instant_ngp_image_folder>
 ```
 For example:
 ```sh
-AgriSim/Object_Sampler/Assets/Scripts$ ./automate.sh /home/brian/Desktop/instant-ngp/data/nerf/sim_flower/
+AgriSim$ ./automate.sh /home/brian/Desktop/instant-ngp/data/nerf/sim_flower/
 ```
 
 The ```automate.sh``` script will perform two operations:
