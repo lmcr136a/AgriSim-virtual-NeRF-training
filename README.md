@@ -23,7 +23,7 @@ numpy
 
 After opening up the Unity environment, set the ```max_screenshots``` parameter in the CameraRotator script by navigating to the Main Camera's inspector GUI.
 
-___**Make sure to enable physical camera in the Unity GUI.**___ This is to ensure that the camera's intrinsic properties written to downstream modules correspond to a physical camera. 
+___**Make sure to enable physical camera in the Unity GUI and do not edit any of the physical parameters.**___ This is to ensure that the camera's intrinsic properties written to downstream modules correspond to a physical camera. 
 
 ![readme_unity_help](https://github.com/QuantuMope/AgriSim/assets/63471459/600b1250-f88c-490c-baef-9b1427a77083)
 
@@ -67,5 +67,7 @@ Q[2,0] & Q[2,1] & Q[2,2] & P[2]\\
 \end{array}\right)
 `$
 Where $Q$ represents the quaternion data and $P$ represents position data.
+
+Another challenge was the problem that our groundtruth method was not matching the quality of NeRFs generated through COLMAP. To fix this, we used the intrinsic matrix values that COLMAP calculated. Since we know that intrinsic values will not change if we use the same physical camera, we hard-coded these values into our groundtruth method. With this change, the GT NeRF quality is equal to the quality of the COLMAP NeRFs.
 
 
