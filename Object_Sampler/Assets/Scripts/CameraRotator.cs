@@ -6,9 +6,21 @@ using UnityEngine;
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
 
+using AustinHarris.JsonRpc;
+
 [RequireComponent(typeof(Camera))]
 public class CameraRotator : MonoBehaviour
 {
+
+    class Rpc : JsonRpcService {
+        [JsonRpcMethod]
+        void Say(string message) {
+            Debug.Log(message);
+        }
+    }
+
+    Rpc rpc;
+
     public GameObject target_object;
     private Camera Camera;
     private Transform center_point;
@@ -129,6 +141,8 @@ public class CameraRotator : MonoBehaviour
 
     void Start()
     {
+        rpc = new Rpc();
+
         start_time = Time.time;
 
         num_screenshots = 0;
@@ -142,12 +156,12 @@ public class CameraRotator : MonoBehaviour
         // Get all the parameters of the camera, and write it to a file
         camera_properties = new List<float>(); 
         Matrix4x4 intrinsic = GetIntrinsic(Camera);
-        float fx = intrinsic[0, 0];
-        float fy = intrinsic[1, 1];
-        float cx = intrinsic[2, 0];
-        float cy = intrinsic[2, 1];
-        float camera_angle_x = Mathf.Atan2(Camera.main.transform.forward.y, Camera.main.transform.forward.z) * Mathf.Rad2Deg;
-        float camera_angle_y = Mathf.Atan2(Camera.main.transform.forward.x, Camera.main.transform.forward.z) * Mathf.Rad2Deg;
+        float fl_x = 567.0f;
+        float fl_y = 567.0f;
+        float cx = 425.0f;
+        float cy = 268.0f;
+        float camera_angle_x = 1.29f;
+        float camera_angle_y = 0.88f;
         // We can assume all of the Unity cameras have no distortion, so we can set the distortion parameters to 0
         float k1 = 0f;
         float k2 = 0f;
@@ -155,8 +169,8 @@ public class CameraRotator : MonoBehaviour
         float p2 = 0f;
         camera_properties.Add(camera_angle_x); // camera_angle_x
         camera_properties.Add(camera_angle_y); // camera_angle_y
-        camera_properties.Add(fx); // fl_x
-        camera_properties.Add(fy); // fl_y
+        camera_properties.Add(fl_x); // fl_x
+        camera_properties.Add(fl_y); // fl_y
         camera_properties.Add(k1); // k1
         camera_properties.Add(k2); // k2
         camera_properties.Add(p1); // p1
@@ -176,20 +190,15 @@ public class CameraRotator : MonoBehaviour
     
     void Update() {
         elapsed_time = Time.time - start_time;
-        int images_per_level = 20;
+        int images_per_level = 50;
         string file_path = "Assets/screenshots/pic" + num_screenshots.ToString() + ".png";
-        if (num_screenshots >= 0 && num_screenshots <= 19) {
+        if (num_screenshots >= 0 && num_screenshots <= 49) {
             // TODO: determine dx based on max_screenshots
             if (num_screenshots == 0) {
-                this.transform.position = new Vector3(0.0f, 2.0f, 5.0f);
+                this.transform.position = new Vector3(0.0f, 2.0f, 10.0f);
                 this.transform.LookAt(target);
                 sc = getSphericalCoordinates(this.transform.position);
             }
-            curr_position = Camera.main.transform.position;
-            curr_quaternion = Camera.main.transform.rotation;
-            positions_list.Add(curr_position);
-            quaternions_list.Add(curr_quaternion);
-            // ScreenCapture.CaptureScreenshot("Assets/screenshots/pic" + num_screenshots.ToString() + ".png");
 
             // calculate dx based on max_screenshots
             float dx = (2 * Mathf.PI) / images_per_level;
@@ -197,28 +206,31 @@ public class CameraRotator : MonoBehaviour
             sc.y += dx;
             transform.position = getCartesianCoordinates(sc) + target;
             transform.LookAt(target);
-        } else if (num_screenshots >= 20 && num_screenshots <= 39) {
-            // TODO: determine dx based on max_screenshots
-            if (num_screenshots == 20) {
-                this.transform.position = new Vector3(0.0f, 6.0f, 5.0f);
-                this.transform.LookAt(target);
-                sc = getSphericalCoordinates(this.transform.position);
-            }
             curr_position = Camera.main.transform.position;
             curr_quaternion = Camera.main.transform.rotation;
             positions_list.Add(curr_position);
             quaternions_list.Add(curr_quaternion);
-            // ScreenCapture.CaptureScreenshot("Assets/screenshots/pic" + num_screenshots.ToString() + ".png");
-            // CamCapture(cam, file_path);
+        } else if (num_screenshots >= 50 && num_screenshots <= 99) {
+            // TODO: determine dx based on max_screenshots
+            if (num_screenshots == 50) {
+                this.transform.position = new Vector3(0.0f, 5.0f, 10.0f);
+                this.transform.LookAt(target);
+                sc = getSphericalCoordinates(this.transform.position);
+            }
+            
             // calculate dx based on max_screenshots
             float dx = (2 * Mathf.PI) / images_per_level;
             // Update phi to rotate around the y-axis
             sc.y += dx;
             transform.position = getCartesianCoordinates(sc) + target;
             transform.LookAt(target);
+            curr_position = Camera.main.transform.position;
+            curr_quaternion = Camera.main.transform.rotation;
+            positions_list.Add(curr_position);
+            quaternions_list.Add(curr_quaternion);
         }
         num_screenshots++;
-        if (num_screenshots >= 40) {
+        if (num_screenshots >= 100) {
             write_positions(positions_file_path, positions_list);
             write_quaternions(quaternions_file_path, quaternions_list);
             UnityEditor.EditorApplication.isPlaying = false;
