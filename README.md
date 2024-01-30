@@ -8,7 +8,7 @@ The Python Sampler can download a user-inputted object from the ShapeNet dataset
 
 The Sampler allows the user to understand the effects that the additional camera poses have on the overall quality of the NeRF.
 
-![environment_view](https://github.com/QuantuMope/AgriSim/assets/63471459/71346f53-15ce-4e3d-a09b-7ce224e5db41)
+![image](https://github.com/QuantuMope/AgriSim/assets/63471459/cd5a9e93-c817-4d1c-a2c0-6b4044499c5f)
 
 Once we have these images, our Unity script will write all of the information needed to generate a NeRF using Instant NGP to a text file. This includes the camera's physical properties, the actual images of the objects, as well as the positions and quaternions associated with each image. Once we have written to the text files, our Python script compiles a transforms.json file that formats all of the information that we collected. This essentially allows us to bypass the use of COLMAP, which takes much longer than our groundtruth method of computing transforms.
 
