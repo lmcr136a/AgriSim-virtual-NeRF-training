@@ -234,7 +234,7 @@ def create_transforms_json():
         "cy": camera_properties[9],
         "w": img_shape[1],
         "h": img_shape[0],
-        "aabb_scale": 2,
+        "aabb_scale": 8,
         "frames": create_frames_arr()
     }
     json_object = json.dumps(dictionary, indent=4)

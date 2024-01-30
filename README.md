@@ -2,11 +2,15 @@
 
 ### Description
 
-This repository provides a method to generate a NeRF of a 3D object using the Unity Game Engine and Instant-NGP. The pipeline begins with a simple Unity environment, where we have a 3D mesh object simulated with the Unity framework. It lies on a solid, flat surface, and has a camera that captures images of the objects at various view angles. 
+This repository provides a Python library that generates a NeRF of a ShapeNet 3D object using the Unity Game Engine and Instant-NGP. The pipeline begins with a simple Unity environment, where we have a 3D mesh object simulated with the Unity framework. It lies on a solid, flat surface, and has a camera that captures images of the objects at various view angles. 
+
+The Python Sampler can download a user-inputted object from the ShapeNet dataset. It then connects to the Unity Game Scene using [peaceful-pie](https://github.com/hughperkins/peaceful-pie) and places that object into the scene. Then, the user can call the Python Sampler to sample from their desired viewpoints. These camera poses are in the form of $(x, y, z, θ, φ)$, where $(x, y, z)$ represent the camera's position and $(θ, φ)$ represent the camera's rotation.
+
+The Sampler allows the user to understand the effects that the additional camera poses have on the overall quality of the NeRF.
 
 ![environment_view](https://github.com/QuantuMope/AgriSim/assets/63471459/71346f53-15ce-4e3d-a09b-7ce224e5db41)
 
-Once we have these images, our Unity script will write all of the information needed to generate a NeRF using Instant NGP to a text file. This includes the camera's physical properties, the actual images of the objects, as well as the positions and quaternions associated with each image. Once we have written to the text files, our Python script compiles a transforms.json file that formats all of the information that we collected. This essentially allows us to bypass the use of COLMAP when creating a NeRF.
+Once we have these images, our Unity script will write all of the information needed to generate a NeRF using Instant NGP to a text file. This includes the camera's physical properties, the actual images of the objects, as well as the positions and quaternions associated with each image. Once we have written to the text files, our Python script compiles a transforms.json file that formats all of the information that we collected. This essentially allows us to bypass the use of COLMAP, which takes much longer than our groundtruth method of computing transforms.
 
 Finally, we will call the Instant NGP's Python API ```pyngp``` to generate a mesh object of the resulting NeRF.
 
@@ -19,9 +23,11 @@ python
 scipy
 opencv
 numpy
+datasets
+peaceful-pie
 ```
 
-After opening up the Unity environment, set the ```max_screenshots``` parameter in the CameraRotator script by navigating to the Main Camera's inspector GUI.
+Please follow the instructions on peaceful-pie's [repository](https://github.com/hughperkins/peaceful-pie) to ensure that it works correctly on both the Python and Unity side.
 
 ___**Make sure to enable physical camera in the Unity GUI and do not edit any of the physical parameters.**___ This is to ensure that the camera's intrinsic properties written to downstream modules correspond to a physical camera. 
 
@@ -33,22 +39,19 @@ Once the text files and screenshots have all been saved, make sure you have crea
 <path-to-instant-ngp>/data/nerf/<OBJECT_NAME> # Make sure this directory exists
 ```
 
-Then, navigate to the AgriSim directory and run the following commands.
+Additionally, make sure that you are in the AgriSim directory when running the Sampler. An example file utilizing the Sampler has been provided
 
 ```sh
-AgriSim$ ./automate.sh <absolute_file_path_to_instant_ngp_image_folder>
-```
-For example:
-```sh
-AgriSim$ ./automate.sh /home/brian/Desktop/instant-ngp/data/nerf/sim_flower/
+AgriSim$ python test_sampler.py
 ```
 
-The ```automate.sh``` script will perform two operations:
-1. Generate the transforms.json file by running the python script ```get_transforms.py```.
-2. Copy over the image files and transforms.json field to the instant-ngp directory.
-3. Call the Instant-NGP's Python API to train and build a NeRF based on the given training images.
+#### Viewing Results
+Once Instant-NGP is finished with training, it will save a mesh file and screenshots of the resulting NeRF. The user can specify the destination paths of these files before running the Sampler.
+
+In order to specify where to take the resulting screenshots from, the user can input a list of camera poses into the ```screenshot_transforms``` parameter when running the Python Sampler.
 
 Once you have the resulting mesh, you can view the resulting OBJ file using any rendering software like Meshlab.
+
 
 ### Challenges
 

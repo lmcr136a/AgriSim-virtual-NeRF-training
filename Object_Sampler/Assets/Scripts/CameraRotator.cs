@@ -8,15 +8,121 @@ using System.Runtime.Serialization.Formatters.Binary;
 
 using AustinHarris.JsonRpc;
 
+public class CameraViewpoint
+{
+    public float x;
+    public float y;
+    public float z;
+    public float theta;
+    public float phi;
+    public CameraViewpoint(Vector3 v, Quaternion q) {
+        this.x = v.x;
+        this.y = v.y;
+        this.z = v.z;
+        this.theta = 0;
+        this.phi = 0;
+    }
+    public Vector3 GetPosition()
+    {
+        return new Vector3(this.x, this.y, this.z);
+    }
+    public Quaternion GetQuaternion() 
+    {
+        Quaternion rotation = Quaternion.Euler(-90 + this.phi, -this.theta, 0f);
+        return rotation;
+    }
+}
+
 [RequireComponent(typeof(Camera))]
 public class CameraRotator : MonoBehaviour
 {
 
     class Rpc : JsonRpcService {
-        [JsonRpcMethod]
-        void Say(string message) {
-            Debug.Log(message);
+        
+        Camera rpc_camera;
+        GameObject rpc_target_object;
+        List<Vector3> rpc_positions_list;
+        List<Quaternion> rpc_quaternions_list;
+        Vector3 sc = new Vector3();
+        private string positions_fp = "Assets/screenshots/positions.txt";
+        private string quaternions_fp = "Assets/screenshots/quaternions.txt";
+        private int curr_poses = 0;
+        
+        public Rpc(Camera rpc_camera, GameObject rpc_target_object, List<Vector3> rpc_positions_list, List<Quaternion> rpc_quaternions_list) {
+            this.rpc_camera = rpc_camera;
+            this.rpc_target_object = rpc_target_object;
+            this.rpc_positions_list = rpc_positions_list;
+            this.rpc_quaternions_list = rpc_quaternions_list;
         }
+
+        [JsonRpcMethod]
+        void sample_default_viewpoints(int max_poses) {
+            // Move the camera around in a singular ring and capture 50 poses
+            rpc_camera.transform.position = new Vector3(0.0f, 5.0f, 10.0f);
+            rpc_camera.transform.LookAt(rpc_target_object.transform.position);
+            sc = getSphericalCoordinates(rpc_camera.transform.position);
+
+            while (curr_poses < max_poses) {
+                // Update camera position
+                float dx = (2 * Mathf.PI) / max_poses;
+                sc.y += dx;
+                rpc_camera.transform.position = getCartesianCoordinates(sc) + rpc_target_object.transform.position;
+                rpc_camera.transform.LookAt(rpc_target_object.transform.position);
+                rpc_positions_list.Add(rpc_camera.transform.position);
+                rpc_quaternions_list.Add(rpc_camera.transform.rotation);
+
+                // Take screenshot
+                string filename = "Assets/screenshots/pic" + curr_poses.ToString() + ".png";
+                RenderTexture active_rt = RenderTexture.active;
+                RenderTexture.active = rpc_camera.targetTexture; 
+                rpc_camera.Render();
+                Texture2D image = new Texture2D(rpc_camera.targetTexture.width, rpc_camera.targetTexture.height);
+                image.ReadPixels(new Rect(0, 0, rpc_camera.targetTexture.width, rpc_camera.targetTexture.height), 0, 0);
+                image.Apply();
+                RenderTexture.active = active_rt;
+                byte[] bytes = image.EncodeToPNG();
+                Destroy(image);
+                File.WriteAllBytes(filename, bytes);
+
+                // Update pose count
+                curr_poses += 1;
+            }
+        }
+
+
+        [JsonRpcMethod]
+        void sample_additional_viewpoints(CameraViewpoint pose) {
+            rpc_camera.transform.position = pose.GetPosition();
+            rpc_camera.transform.rotation = pose.GetQuaternion();
+            // Write position/quaternion info
+            rpc_positions_list.Add(rpc_camera.transform.position);
+            rpc_quaternions_list.Add(rpc_camera.transform.rotation);
+
+            // Capture camera pose
+            string filename = "Assets/screenshots/pic" + curr_poses.ToString() + ".png";
+            RenderTexture active_rt = RenderTexture.active;
+            RenderTexture.active = rpc_camera.targetTexture; 
+            rpc_camera.Render();
+            Texture2D image = new Texture2D(rpc_camera.targetTexture.width, rpc_camera.targetTexture.height);
+            image.ReadPixels(new Rect(0, 0, rpc_camera.targetTexture.width, rpc_camera.targetTexture.height), 0, 0);
+            image.Apply();
+            RenderTexture.active = active_rt;
+            byte[] bytes = image.EncodeToPNG();
+            Destroy(image);
+            File.WriteAllBytes(filename, bytes);
+
+            // Update pose count
+            curr_poses += 1;
+
+        }
+
+        [JsonRpcMethod]
+        // After sampling all desired poses, write position/quaternion info to files
+        void sampling_cleanup() {
+            write_positions(positions_fp, rpc_positions_list);
+            write_quaternions(quaternions_fp, rpc_quaternions_list);
+        }
+
     }
 
     Rpc rpc;
@@ -49,7 +155,7 @@ public class CameraRotator : MonoBehaviour
     Vector3 sc = new Vector3();
 
     // Write the list of camera positions to a file
-    public void write_positions(string file_path, List<Vector3> matrices)
+    static public void write_positions(string file_path, List<Vector3> matrices)
     {
         StreamWriter writer = new StreamWriter(file_path, true);
         for (int i = 0; i < matrices.Count; i++) {
@@ -59,7 +165,7 @@ public class CameraRotator : MonoBehaviour
     }
 
     // Write the list of camera quarternions to a file
-    public void write_quaternions(string file_path, List<Quaternion> matrices)
+    static public void write_quaternions(string file_path, List<Quaternion> matrices)
     {
         StreamWriter writer = new StreamWriter(file_path, true);
         for (int i = 0; i < matrices.Count; i++) {
@@ -68,27 +174,8 @@ public class CameraRotator : MonoBehaviour
         writer.Close();
     }
 
-    // Function to get the intrinsic properties of the camera
-    private Matrix4x4 GetIntrinsic(Camera cam)
-    {
-        float pixel_aspect_ratio = (float)cam.pixelWidth / (float)cam.pixelHeight;
-
-        float alpha_u = cam.focalLength * ((float)cam.pixelWidth / cam.sensorSize.x);
-        float alpha_v = cam.focalLength * pixel_aspect_ratio * ((float)cam.pixelHeight / cam.sensorSize.y);
-
-        float u_0 = (float)cam.pixelWidth / 2;
-        float v_0 = (float)cam.pixelHeight / 2;
-
-        //IntrinsicMatrix in row major
-        Matrix4x4 camIntriMatrix = new Matrix4x4(new Vector4(alpha_u, 0f, u_0, 0f),
-                                                 new Vector4(0f, alpha_v, v_0, 0f),
-                                                 new Vector4(0f, 0f, 1f, 0f),
-                                                 new Vector4(0f, 0f, 0f, 0f));
-        return camIntriMatrix;
-    }
-
     // Convert Cartesian coordinates to Spherical coordinates
-    private Vector3 getSphericalCoordinates(Vector3 cartesian) {
+    static public Vector3 getSphericalCoordinates(Vector3 cartesian) {
         float r = Mathf.Sqrt(Mathf.Pow(cartesian.x, 2) + Mathf.Pow(cartesian.y, 2) + Mathf.Pow(cartesian.z, 2));
         float phi = Mathf.Atan2(cartesian.y, cartesian.x);
         float theta = Mathf.Acos(cartesian.z / r);
@@ -96,40 +183,12 @@ public class CameraRotator : MonoBehaviour
     }
 
     // Convert Spherical coordinates to Cartesian coordinates
-    private Vector3 getCartesianCoordinates(Vector3 spherical) {
+    static public Vector3 getCartesianCoordinates(Vector3 spherical) {
         Vector3 result = new Vector3();
         result.x = spherical.x * Mathf.Cos(spherical.z) * Mathf.Cos(spherical.y);
         result.y = spherical.x * Mathf.Sin(spherical.z);
         result.z = spherical.x * Mathf.Cos(spherical.z) * Mathf.Sin(spherical.y);
         return result;
-    }
-
-    // After each iteration of Update(), capture image with Unity camera
-    void LateUpdate() {
-        Capture();
-    }
-
-
-    // Captures an image using the Unity camera
-    public void Capture() {
-        string filename = "Assets/screenshots/pic" + (num_screenshots - 1).ToString() + ".png";
-
-        RenderTexture active_rt = RenderTexture.active;
-        RenderTexture.active = Camera.targetTexture; 
-
-        Camera.Render();
-
-        // Current issue: Camera's targetTexture is Null value
-        Texture2D image = new Texture2D(Camera.targetTexture.width, Camera.targetTexture.height);
-        image.ReadPixels(new Rect(0, 0, Camera.targetTexture.width, Camera.targetTexture.height), 0, 0);
-        image.Apply();
-        RenderTexture.active = active_rt;
-
-        byte[] bytes = image.EncodeToPNG();
-        Destroy(image);
-
-        File.WriteAllBytes(filename, bytes);
-
     }
 
     // Create a new targetTexture before the script runs
@@ -141,21 +200,39 @@ public class CameraRotator : MonoBehaviour
 
     void Start()
     {
-        rpc = new Rpc();
 
+        // Delete all the existing camera poses in the screenshots directory
+        string directoryPath = "./Assets/screenshots/";
+
+        // Check if the directory exists
+        if (Directory.Exists(directoryPath))
+        {
+            Debug.Log("Directory contents are being emptied...");
+            // Delete all files within the directory
+            foreach (string filePath in Directory.GetFiles(directoryPath))
+            {
+                File.Delete(filePath);
+            }
+            Debug.Log("Directory contents emptied successfully.");
+        }
+        else
+        {
+            Debug.Log("Directory does not exist.");
+        }
+        
         start_time = Time.time;
 
         num_screenshots = 0;
-        Application.targetFrameRate = 300;
 
         positions_list = new List<Vector3>();
         quaternions_list = new List<Quaternion>();
         positions_file_path = "Assets/screenshots/positions.txt";
         quaternions_file_path = "Assets/screenshots/quaternions.txt";
 
+        rpc = new Rpc(Camera, target_object, positions_list, quaternions_list);
+
         // Get all the parameters of the camera, and write it to a file
         camera_properties = new List<float>(); 
-        Matrix4x4 intrinsic = GetIntrinsic(Camera);
         float fl_x = 567.0f;
         float fl_y = 567.0f;
         float cx = 425.0f;
@@ -185,57 +262,6 @@ public class CameraRotator : MonoBehaviour
         camera_properties_writer.Close();
 
         target = target_object.transform.position;
-
-    }
-    
-    void Update() {
-        elapsed_time = Time.time - start_time;
-        int images_per_level = 50;
-        string file_path = "Assets/screenshots/pic" + num_screenshots.ToString() + ".png";
-        if (num_screenshots >= 0 && num_screenshots <= 49) {
-            // TODO: determine dx based on max_screenshots
-            if (num_screenshots == 0) {
-                this.transform.position = new Vector3(0.0f, 2.0f, 10.0f);
-                this.transform.LookAt(target);
-                sc = getSphericalCoordinates(this.transform.position);
-            }
-
-            // calculate dx based on max_screenshots
-            float dx = (2 * Mathf.PI) / images_per_level;
-            // Update phi to rotate around the y-axis
-            sc.y += dx;
-            transform.position = getCartesianCoordinates(sc) + target;
-            transform.LookAt(target);
-            curr_position = Camera.main.transform.position;
-            curr_quaternion = Camera.main.transform.rotation;
-            positions_list.Add(curr_position);
-            quaternions_list.Add(curr_quaternion);
-        } else if (num_screenshots >= 50 && num_screenshots <= 99) {
-            // TODO: determine dx based on max_screenshots
-            if (num_screenshots == 50) {
-                this.transform.position = new Vector3(0.0f, 5.0f, 10.0f);
-                this.transform.LookAt(target);
-                sc = getSphericalCoordinates(this.transform.position);
-            }
-            
-            // calculate dx based on max_screenshots
-            float dx = (2 * Mathf.PI) / images_per_level;
-            // Update phi to rotate around the y-axis
-            sc.y += dx;
-            transform.position = getCartesianCoordinates(sc) + target;
-            transform.LookAt(target);
-            curr_position = Camera.main.transform.position;
-            curr_quaternion = Camera.main.transform.rotation;
-            positions_list.Add(curr_position);
-            quaternions_list.Add(curr_quaternion);
-        }
-        num_screenshots++;
-        if (num_screenshots >= 100) {
-            write_positions(positions_file_path, positions_list);
-            write_quaternions(quaternions_file_path, quaternions_list);
-            UnityEditor.EditorApplication.isPlaying = false;
-            Debug.Log("Elapsed Time: " + elapsed_time);
-        }
 
     }
 
