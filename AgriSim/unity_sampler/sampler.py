@@ -7,6 +7,7 @@ import os
 import zipfile
 import subprocess
 import json
+import yaml
 import numpy as np
 
 CAMERA_PROPERTIES = [1.29, 0.88, 567, 567, 0, 0, 0, 0, 425, 268, 850, 531, 8]
@@ -75,10 +76,11 @@ class Sampler:
         Args:
             object_id (str): The desired object
         """
-
+        with open('config.yaml') as f:       
+            token = yaml.safe_load(f)['API_TOKEN']
         # Download object family from Hugging Face hub
         hub_filepath = object_family + ".zip"
-        cache_path = hf_hub_download(repo_id="ShapeNet/ShapeNetCore", filename=hub_filepath, repo_type="dataset")
+        cache_path = hf_hub_download(repo_id="ShapeNet/ShapeNetCore", filename=hub_filepath, repo_type="dataset", token=token)
         cache_dir = os.path.dirname(cache_path)
 
         print(f"Everything in cache directory: {os.listdir(cache_dir)}, and the current cache path is {cache_path}")

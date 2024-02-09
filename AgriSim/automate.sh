@@ -25,9 +25,9 @@ cp ./Object_Sampler/Assets/screenshots/*.png $dest_dir$image_dir
 save_mesh=$4
 echo "save_mesh argument is: $save_mesh"
 if [ "$save_mesh" = true ]; then
-    python $dest_dir/../../../scripts/run.py --scene $dest_dir --network base.json --n_steps 5000 --save_mesh $screenshot_dir"mesh.obj" --screenshot_dir $screenshot_dir --screenshot_transforms $screenshot_transforms
+    python ../models/instant-ngp/scripts/run.py --scene $dest_dir --network base.json --n_steps 5000 --save_mesh $screenshot_dir"mesh.obj" --screenshot_dir $screenshot_dir --screenshot_transforms $screenshot_transforms
 else
-    python $dest_dir/../../../scripts/run.py --scene $dest_dir --network base.json --n_steps 5000 --screenshot_dir $screenshot_dir --screenshot_transforms $screenshot_transforms
+    python ../models/instant-ngp/scripts/run.py --scene $dest_dir --network base.json --n_steps 5000 --screenshot_dir $screenshot_dir --screenshot_transforms $screenshot_transforms
 fi
 
 echo "Resulting mesh and screenshots saved to $screenshot_dir"
