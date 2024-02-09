@@ -722,10 +722,14 @@ def config_parser():
     parser.add_argument("--n0",   type=int, default=50000, 
                         help='initial train sample number')
     parser.add_argument("--baseline",   type=bool, default=False, 
-                        help='baseliner')
+                        help='baseline')
     parser.add_argument("--using_sample_percentage",   type=float, default=0.7, 
                         help='How much % of total dataset will be used to train the NeRF')
     parser.add_argument("--val_iter",   type=int, default=500, 
                         help='validation iter')
+    parser.add_argument("--rl_n_games",   type=int, default=100, 
+                        help='number of senarioes RL will do')
+    parser.add_argument("--rl_eval",   type=bool, default=False, 
+                        help='RL evaluation mode')
 
     return parser

@@ -4,24 +4,26 @@ import numpy as np
 from rl_models.dddqn import DDDQNAgent
 from rl_env import NeRFENV
 
-
 """
-
-selec_idx = RL_prediction(images, positions, position_candidates, new_pos_num)
-
-
+observation: [(img1, pos1), ..., (img4, pos4)]
+poses = [pos1, ..., posN]
+action_space: [(pos_idx1, pos_idx4)_1, (pos_idx1, pos_idx4)_2, ...]
+action: [pos1, pos2, pos3, pos4]
 """
 
 class RL():
-    def __init__(self, args, position_candidates) -> None:
+    def __init__(self, args) -> None:
     
-        self.env = NeRFENV(args, position_candidates)
-        self.agent = DDDQNAgent(env=self.env, lr=1e-3, gamma=0.99, n_actions=5, epsilon=1.0,
-                batch_size=64, input_dims=[1])
+        self.env = NeRFENV(args)
+        self.agent = DDDQNAgent(lr=1e-3, gamma=0.99, n_actions=5, epsilon=1.0,
+                batch_size=64, input_dims=[1], mem_size=100000)
         self.n_games = args.rl_n_games
         self.scores = []
         self.eps_history = []
         self.eval = args.rl_eval
+        if self.eval:
+            print(args)
+            exit()
         self.log_dir = os.path.join(args.basedir, args.expname)
         self.checkpoint = os.path.join(self.log_dir, "RLcheckpoint")
         if os.path.exists(self.checkpoint):
@@ -49,7 +51,8 @@ class RL():
             print("initial state: ", observation, end='\t')
             while not done:
                 # if you train model, change choose_action's evaluate to False
-                action = self.agent.choose_action(observation, evaluate=True)
+                action = self.agent.choose_action(observation, evaluate=False)
+                print("!!!!!!!!!!action", action.shape)
                 observation_, reward, done, info = self.env.step(action)
                 print(f"- action: {action} | state: {observation_} | reward: {reward}")
                 score += reward

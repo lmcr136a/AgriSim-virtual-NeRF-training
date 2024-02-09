@@ -23,10 +23,15 @@ i_video = 500
 i_weights = 500
 
 ## custom
-baseline = False
+baseline = 
 n0 = 4
 n = 4
 using_sample_percentage=0.7
 
 n_iters = 501
 val_iter=100
+
+## RL
+
+rl_n_games = 100
+rl_eval =
