@@ -94,4 +94,4 @@ class NeRFTrainer():
             psnr = mse2psnr(img_loss)
         loss = np.mean(psnr)
         self.val_loss.append(loss)
-        return loss
+        return loss, rgbs
