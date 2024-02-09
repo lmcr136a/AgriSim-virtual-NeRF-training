@@ -7,6 +7,13 @@ from nerf_trainer import NeRFTrainer
 from utils import *
 
 
+"""
+observation (state): [validation_img, positions_used]
+poses = [pos1, ..., posN]
+action_space: [(pos_idx1,.., pos_idx4)_1, (pos_idx1,.., pos_idx4)_2, ...]
+action: [pos1, pos2, pos3, pos4]
+"""
+
 
 class NeRFENV(Env):
     def __init__(self, args, epi_length=5):
@@ -23,7 +30,7 @@ class NeRFENV(Env):
         self.ks = get_Ntrain_data_nums(args, self.poses)
         
         self.action_space = self.pose_idx_combs
-        self.observation_space = Box(low=np.array([0]), high=np.array([100]), dtype=np.int8)
+        # self.observation_space = Box(low=np.array([0]), high=np.array([100]), dtype=np.int8)
         self.state = self.poses[self.pose_idx_combs[np.random.choice(list(range(len(self.pose_idx_combs))))]]  # n*3*5
         self.prev_state = self.state
 
@@ -33,6 +40,8 @@ RL Start{"="*10}
     Episode Len: {self.epi_length}
               """)
 
+    def get_actions(self, action_space_selection):
+        return self.poses[action_space_selection, :, :]
     
     def step(self, action):
         print("self.action_space", self.action_space.shape)
@@ -51,7 +60,7 @@ RL Start{"="*10}
         self.nerf_trainer.train(new_pos)
 
         # Reward
-        reward = self.nerf_trainer.val()
+        reward, new_state_img = self.nerf_trainer.val()
         
         self.prev_state = self.state
         
