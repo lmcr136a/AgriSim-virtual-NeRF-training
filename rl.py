@@ -15,7 +15,7 @@ class RL():
     def __init__(self, args) -> None:
     
         self.env = NeRFENV(args)
-        self.agent = DDDQNAgent(lr=1e-3, gamma=0.99, n_actions=5, epsilon=1.0,
+        self.agent = DDDQNAgent(lr=1e-3, gamma=0.99, n_actions=args.n, epsilon=1.0,
                 batch_size=64, input_dims=[1], mem_size=100000)
         self.n_games = args.rl_n_games
         self.scores = []

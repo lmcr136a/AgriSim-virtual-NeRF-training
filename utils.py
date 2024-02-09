@@ -48,16 +48,6 @@ def train_preprocess(args, images, poses, bds, render_poses, i_test):
     i_train = np.array([i for i in np.arange(int(images.shape[0])) if
                     (i not in i_test and i not in i_val)])
 
-    print('DEFINING BOUNDS')
-    if args.no_ndc:
-        near = np.ndarray.min(bds) * .9
-        far = np.ndarray.max(bds) * 1.
-        
-    else:
-        near = 0.
-        far = 1.
-    print('NEAR FAR', near, far)
-
 
     H, W, K = get_K(hwf) # intrinsics
 
@@ -78,39 +68,31 @@ def train_preprocess(args, images, poses, bds, render_poses, i_test):
         with open(f, 'w') as file:
             file.write(open(args.config, 'r').read())
 
-    # Create nerf model
-    render_kwargs_train, render_kwargs_test, start, grad_vars, optimizer = create_nerf(args)
 
-    bds_dict = {
-        'near' : near,
-        'far' : far,
-    }
-    render_kwargs_train.update(bds_dict)
-    render_kwargs_test.update(bds_dict)
 
     # Move testing data to GPU
     render_poses = torch.Tensor(render_poses).to(device)
 
-    # Short circuit if only rendering out from trained model
-    if args.render_only:
-        print('RENDER ONLY')
-        with torch.no_grad():
-            if args.render_test:
-                # render_test switches to test poses
-                images = images[i_test]
-            else:
-                # Default is smoother render_poses path
-                images = None
+    # # Short circuit if only rendering out from trained model
+    # if args.render_only:
+    #     print('RENDER ONLY')
+    #     with torch.no_grad():
+    #         if args.render_test:
+    #             # render_test switches to test poses
+    #             images = images[i_test]
+    #         else:
+    #             # Default is smoother render_poses path
+    #             images = None
 
-            testsavedir = os.path.join(basedir, expname, 'renderonly_{}_{:06d}'.format('test' if args.render_test else 'path', start))
-            os.makedirs(testsavedir, exist_ok=True)
-            print('test poses shape', render_poses.shape)
+    #         testsavedir = os.path.join(basedir, expname, 'renderonly_{}_{:06d}'.format('test' if args.render_test else 'path', start))
+    #         os.makedirs(testsavedir, exist_ok=True)
+    #         print('test poses shape', render_poses.shape)
 
-            rgbs, _ = render_path(render_poses, hwf, K, args.chunk, render_kwargs_test, gt_imgs=images, savedir=testsavedir, render_factor=args.render_factor)
-            print('Done rendering', testsavedir)
-            imageio.mimwrite(os.path.join(testsavedir, 'video.mp4'), to8b(rgbs), fps=30, quality=8)
+    #         rgbs, _ = render_path(render_poses, hwf, K, args.chunk, render_kwargs_test, gt_imgs=images, savedir=testsavedir, render_factor=args.render_factor)
+    #         print('Done rendering', testsavedir)
+    #         imageio.mimwrite(os.path.join(testsavedir, 'video.mp4'), to8b(rgbs), fps=30, quality=8)
 
-            return
+    #         return
 
     # Prepare raybatch tensor if batching random rays
     use_batching = not args.no_batching
@@ -141,7 +123,7 @@ def train_preprocess(args, images, poses, bds, render_poses, i_test):
     print('TRAIN views are', i_train)
     print('TEST views are', i_test)
     print('VAL views are', i_val)
-    return optimizer, rays_rgb, hwf, render_kwargs_train, render_kwargs_test, start, i_batch
+    return rays_rgb, i_batch
 
 
 def get_Ntrain_data_nums(args, poses):
@@ -338,19 +320,20 @@ def render_path(render_poses, hwf, K, chunk, render_kwargs, gt_imgs=None, savedi
     disps = []
 
     t = time.time()
-    for i, c2w in enumerate(tqdm(render_poses)):
-        print(i, time.time() - t)
+    for i, c2w in enumerate(render_poses):
+        # print(i, time.time() - t)
         t = time.time()
         rgb, disp, acc, _ = render(H, W, K, chunk=chunk, c2w=c2w[:3,:4], **render_kwargs)
         rgbs.append(rgb.cpu().numpy())
         disps.append(disp.cpu().numpy())
-        if i==0:
-            print(rgb.shape, disp.shape)
+        # if i==0:
+        #     print(rgb.shape, disp.shape)
 
         if savedir is not None:
             rgb8 = to8b(rgbs[-1])
             rgb8_gt = to8b(gt_imgs[i])
             filename = os.path.join(savedir, 'val{:03d}.png'.format(i))
+            rgb8 = rgb8.transpose(1,0,2)  
             imageio.imwrite(filename, rgb8)
             # rgb8 = to8b(rgbs[-1])
             filename = os.path.join(savedir, 'val{:03d}_gt.png'.format(i))
@@ -359,7 +342,7 @@ def render_path(render_poses, hwf, K, chunk, render_kwargs, gt_imgs=None, savedi
 
     rgbs = np.stack(rgbs, 0)
     disps = np.stack(disps, 0)
-
+    rgbs = torch.Tensor(rgbs).transpose(2,1).cpu()  
     return rgbs, disps
 
 
