@@ -40,7 +40,7 @@ class NeRFENV(Env):
 
         print(f"""
 RL Start{"="*10}
-    Action Space: {self.action_space}
+    Action Space: {self.action_space.shape}
     Episode Len: {self.epi_length}
               """)
 
@@ -48,6 +48,8 @@ RL Start{"="*10}
         return self.poses[action_space_selection, :, :]
     
     def get_state_reward(self, new_poses, new_poses_idxs):
+        # print(type(new_poses), type(new_poses_idxs))
+        # print(new_poses.shape, len(new_poses_idxs))
         self.nerf_trainer.train(new_poses, new_poses_idxs)
         return self.nerf_trainer.val()
     
@@ -55,17 +57,15 @@ RL Start{"="*10}
         return np.random.choice(list(range(len(self.poses))), how_many_pose, replace=False)
     
     def step(self, action):
-        new_pos_idx = self.action_space[action]  # action 1 -> one case that grabs n poses, there is nC_N actions
-        new_pos = self.poses[new_pos_idx]
-        self.state = np.concatenate((self.state, new_pos))
-        # self.action_space.pop(action)
         self.epi_length -= 1
-        
-        # Train the nerf with new pos imgs
-        self.nerf_trainer.train(new_pos)
-
-        # Reward
-        reward, new_state_img = self.nerf_trainer.val()
+        if type(action) != list and type(action) != np.ndarray:
+            action = np.array([action])
+        new_pos = self.action_space[action]  # action 1 -> one case that grabs n poses, there is nC_N actions
+        # self.action_space.pop(action)
+        action = np.array(action)
+        print(type(new_pos), type(action))
+        print(new_pos.shape, action.shape)
+        reward, self.state = self.get_state_reward(new_pos, action)   # loss, (rgbs, val_gt_poses)
         
         self.prev_state = self.state
         

@@ -48,13 +48,13 @@ class RL():
             done = False
             score = 0
             observation = self.env.reset()
-            print("initial state: ", observation, end='\t')
+            # print("initial state: ", observation, end='\t')
             while not done:
                 # if you train model, change choose_action's evaluate to False
                 action = self.agent.choose_action(observation, evaluate=False)
-                print("!!!!!!!!!!action", action.shape)
+                # print("!!!!!!!!!!action", action.shape)
                 observation_, reward, done, info = self.env.step(action)
-                print(f"- action: {action} | state: {observation_} | reward: {reward}")
+                # print(f"- action: {action} | state: {observation_} | reward: {reward}")
                 score += reward
                 self.agent.store_transition(observation, action, reward, observation_, done)
                 if not self.eval:

@@ -85,8 +85,8 @@ class NeRFTrainer():
             # logs(self.args, i, render_poses, images, self.global_step, self.render_kwargs_train, self.optimizer, self.render_kwargs_test, 
             #         self.hwf, K, poses, loss, psnr, self.i_test)
             self.global_step += 1
-            losses.append(loss.detach().cpu().numpy())
-        self.train_loss.append(np.mean(losses))
+            self.train_loss.append(loss.detach().cpu().numpy())
+        # self.train_loss.append(np.mean(losses))
         
     
     def val(self,):

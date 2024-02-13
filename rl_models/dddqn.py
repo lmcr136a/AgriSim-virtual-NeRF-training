@@ -110,7 +110,7 @@ class DDDQNAgent():
             state = np.array([observation])
             actions = self.q_eval.advantage(state)
             action = tf.math.argmax(actions, axis=1).numpy()[0]
-            print(action.shape)
+            print("Action shape:", action.shape)
         return action
 
     def learn(self):
