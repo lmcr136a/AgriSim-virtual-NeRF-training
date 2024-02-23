@@ -65,7 +65,8 @@ RL Start{"="*10}
         action = np.array(action)
         print(type(new_pos), type(action))
         print(new_pos.shape, action.shape)
-        reward, self.state = self.get_state_reward(new_pos, action)   # loss, (rgbs, val_gt_poses)
+        self.state.append(new_pos)
+        reward = self.get_state_reward(new_pos, action)   # loss (psnr)
         
         self.prev_state = self.state
         

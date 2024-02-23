@@ -105,7 +105,7 @@ class NeRFTrainer():
         self.val_loss.append(loss)
         # Reward, State
         self.save_plot()
-        return loss, (rgbs, val_gt_poses)
+        return loss  # higher psnr means good performance
     
     def save_plot(self, postfix=""):
         fig, axs = plt.subplots(nrows=1, ncols=2, figsize=(12,7))
