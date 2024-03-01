@@ -1,6 +1,10 @@
 import torch
-from utils import config_parser
-from rl import RL
+import argparse
+import yaml
+import numpy as np
+from argparse import Namespace
+from utils import get_configs
+from ingp import INGPTrainer
 
 
 if __name__ == "__main__":
@@ -12,11 +16,19 @@ if __name__ == "__main__":
     16 = 4 + 4 + 4 + 4
         n0  n1  n2  n3
     """
-            
-    parser = config_parser()
-    args = parser.parse_args()
+    np.random.seed(0)
+    confs = get_configs()
     
-    rl = RL(args)
-    rl.train()
+    for c in confs:
+        ### This is for the baseline
+        if c.baseline:
+            random_poses = (np.random.random_sample((c.total_images, 3))-0.5)*c.limit*2
+            random_poses[:, 1] = -np.abs(random_poses[:, 1])
+            random_poses
 
-    ## Baseline
+            trainer = INGPTrainer(c)
+            trainer.train(random_poses)
+            trainer.val(0)
+        else:
+            from rl_test import run_rl
+            run_rl(c)

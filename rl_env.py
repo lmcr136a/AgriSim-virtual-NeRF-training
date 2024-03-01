@@ -1,10 +1,12 @@
 import numpy as np
-from gym import Env
 from gym.spaces import Box
 from itertools import combinations
 
-from nerf_trainer import NeRFTrainer
+from ingp import INGPTrainer
 from utils import *
+
+import gymnasium as gym
+from gymnasium import spaces
 
 
 """
@@ -15,23 +17,22 @@ action: [pos1, pos2, pos3, pos4]
 """
 
 
-class NeRFENV(Env):
+class NeRFENV(gym.Env):
     def __init__(self, args, epi_length=5):
         self.args = args
-        self.nerf_trainer = NeRFTrainer(args)
+        self.nerf_trainer = INGPTrainer(args)
 
         self.epi_length = epi_length
-        self.poses = self.nerf_trainer.poses
-        # self.pose_idx_combs = np.array(list(combinations(list(range(len(self.poses))), args.n)))  # combination of pose index C*4
-
-
-
-        initial_idxs = np.random.randint(0, self.poses.shape[0], args.n0)
-        self.selec_idx = initial_idxs
-        self.ks = get_Ntrain_data_nums(args, self.poses)
         
         self.action_space = self.poses
         # self.observation_space = Box(low=np.array([0]), high=np.array([100]), dtype=np.int8)
+        
+        self.observation_space = spaces.Dict(
+                    {
+                        "used_poses": spaces.Box(0, size - 1, shape=(2,), dtype=int),
+                        "target": spaces.Box(0, size - 1, shape=(2,), dtype=int),
+                    }
+                )
 
         initial_poses_idx = self.randomly_select_pose_idx(args.n0)
         initial_poses = self.poses[initial_poses_idx]

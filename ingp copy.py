@@ -60,7 +60,7 @@ if __name__ == "__main__":
     exp_path = "logs/test"
     img_dataset_path = "../data/unity_images"
     args.scene = img_dataset_path
-    args.screenshot_transforms = os.path.join(img_dataset_path, "screenshot_transforms.json")
+    args.screenshot_transforms = os.path.join(img_dataset_path, "transforms.json")
     args.save_mesh = os.path.join(exp_path, "mesh.obj")
     args.screenshot_dir = os.path.join(exp_path)
 
