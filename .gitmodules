@@ -1,6 +1,8 @@
 [submodule "AgriSim-RL"]
 	path = AgriSim-RL
 	url = https://github.com/lmcr136a/AgriSim-RL.git
+    branch = master
 [submodule "AgriSim"]
 	path = AgriSim
 	url = https://github.com/QuantuMope/AgriSim.git
+    branch = rl-linked
