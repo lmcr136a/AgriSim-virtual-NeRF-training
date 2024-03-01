@@ -1,0 +1,6 @@
+[submodule "AgriSim-RL"]
+	path = AgriSim-RL
+	url = https://github.com/lmcr136a/AgriSim-RL.git
+[submodule "AgriSim"]
+	path = AgriSim
+	url = https://github.com/QuantuMope/AgriSim.git

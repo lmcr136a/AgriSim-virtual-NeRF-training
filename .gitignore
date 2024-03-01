@@ -1,6 +1,8 @@
 data/
-
-
+models/instant-ngp/data/
+AgriSim-RL/logs/
+AgriSim/Object_Sampler
+AgriSim/unity_images/
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
