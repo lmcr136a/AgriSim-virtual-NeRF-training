@@ -1,1 +1,0 @@
-# AgriSim-virtual-NeRF-training
