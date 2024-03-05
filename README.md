@@ -6,6 +6,10 @@ This repository provides a pipeline that uses reinforcement learning to find the
 
 Using this dataset, the reinforcement learning agent within the AgriSim-RL module seeks to find the most effective positions of images for the training of the NeRF model. At each step, the agent predicts the camera position coordinates, and trains the NeRF model using images captured from these coordinates. After training, the agent's reward is assessed using validation metrics of the model, and the agent aims to increase the validation performance of the NeRF model.
 
+The following figure shows how AgriSim-RL works. It initially samples `n_0` images and the RL agent selects new images iteratively. Our goal is NeRF model trained with AgriSim-RL using `n_0 + ... + n_k = N` images outperforms the model trained with `N' > N` images.
+
+##### AgriSim-RL Process:
+
 ![1709622042324](image/README/figure1.png)
 
 The future goal is to adopt uncertainty map algorithms to enable the RL agent to predict the optimal image positions more effectively. Calculating the uncertainty score of the NeRF scene allows the RL agent to observe and identify locations with high uncertainty prioritize predicting this part.
